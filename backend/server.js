@@ -23,11 +23,10 @@ const __dirname = path.dirname(__filename);
 
 // CORS Configuration
 const corsOptions = {
-    origin: process.env.NODE_ENV === "production"
-        ? ["https://your-frontend-url.vercel.app", "http://localhost:5173"]  // We'll update this after deploying frontend
-        : "http://localhost:5173",
+    origin: '*',  // Allow all origins in development
     credentials: true,
-    optionsSuccessStatus: 200
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 // Middleware
@@ -38,7 +37,7 @@ app.use(morgan("dev"));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
 // API Routes
@@ -56,20 +55,12 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Production setup
-if (ENV_VARS.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
-    });
-}
-
 // Connect to MongoDB and start server
 const startServer = async () => {
     try {
         await connectDB();
         app.listen(PORT, () => {
-            console.log(`Server running in ${ENV_VARS.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
+            console.log(`Server running in ${ENV_VARS.NODE_ENV || 'development'} mode on port ${PORT}`);
         });
     } catch (error) {
         console.error("Error starting server:", error);
